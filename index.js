@@ -1,4 +1,4 @@
-var SerialPort = require("serialport").SerialPort; // localize object constructor
+var SerialPort = require('serialport').SerialPort;
 
 var util = require('./lib/util');
 // var serialPort = new SerialPort('/dev/tty.wchusbserialfd130', {
@@ -9,64 +9,49 @@ var serialPort = new SerialPort('/dev/tty.wchusbserialfa140', {
 var circles = require('./lib/circles');
 var enteties = [];
 var values = {
-  up: 42, 
+  up: 42,
   down: 36
 }
 
-serialPort.on("open", function () {
+serialPort.on('open', function () {
   console.log('open');
-  serialPort.on('data', function(data) {
-    var st = data.toString().replace(/\r\n/, '');
+  serialPort.on('data', function (data) {
     if (data.toString().replace(/\r\n/, '') === 'OK') {
       next();
-    }
-    else {
+    } else {
       console.log('not ok data received: ' + data);
     }
   });
 });
-serialPort.on("close", function () {
+serialPort.on('close', function () {
   console.log('close');
 })
 var codes = [];
 
-function random (amount) {
-  for (var i = 0; i < amount; i++) {
-    codes.push('G0 X'+ Math.floor((Math.random() * 50)) + ' Y'+ Math.floor((Math.random() * 100)));
-    if (i === 0) {
-      codes.push('M1 140');
-    }
-  }
-  codes.push('M1 120');
-  codes.push('G0 X0 Y0');
-}
-
-
-function next() {
+function next () {
   console.log('next', codes.length);
   if (codes.length > 0) {
     var gCode = codes.shift();
-    serialPort.write(gCode + '\n', function(err, results, yo) {
+    serialPort.write(gCode + '\n', function (err, results, yo) {
       if (err) {
         console.log('err ' + err);
       }
       // console.log('results ' + results);
     });
   } else {
-      if (enteties.length > 0) {
-        var nextCoords = enteties[0].getNext()
-        if (nextCoords === false) {
-          enteties.shift();
-          next();
-        }
-        else {
-          console.log('next coords from entity');
-          codes = nextCoords;
-          next();
-        }
+    if (enteties.length > 0) {
+      var nextCoords = enteties[0].getNext()
+      if (nextCoords === false) {
+        enteties.shift();
+        next();
       } else {
-          console.log('END');
+        console.log('next coords from entity');
+        codes = nextCoords;
+        next();
       }
+    } else {
+      console.log('END');
+    }
 
   }
 }
