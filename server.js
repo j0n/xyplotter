@@ -1,8 +1,21 @@
 var express = require('express');
+var bodyParser = require('body-parser')
 var app = express();
-app.use(express.static('app'));
-var xy = require('./index');
+var xyUtil = require('./lib/util');
 
+app.use(express.static('app'));
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({ extended: true }));
+
+var xy = {}// require('./index');
+
+
+app.post('/save-to-gcode', (req, res) => {
+    var body = req.body;
+    xyUtil.save('test', body);
+    res.send('Done')
+
+})
 app.get('/d/:value', (req, res) => {
   xy.downValue(req.params.value);
   res.send(xy.info());
