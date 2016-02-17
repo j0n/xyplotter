@@ -13,6 +13,7 @@
     "express": "^4.13.4",
     "gcode": "^0.4.0",
     "serialport": "^2.0.6",
-    "svgmill": "0.0.1"
+    "svgmill": "0.0.1",
+    "tap": "^5.4.4"
   }
 }
