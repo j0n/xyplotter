@@ -10,12 +10,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var xy = {}// require('./index');
 
 
-app.post('/save-to-gcode', (req, res) => {
-    var body = req.body;
-    xyUtil.save('test', body);
+app.post('/saveObject/:name', (req, res) => {
+    xyUtil.save(req.params.name, req.body);
     res.send('Done')
-
 })
+
 app.get('/d/:value', (req, res) => {
   xy.downValue(req.params.value);
   res.send(xy.info());

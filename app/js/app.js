@@ -1,21 +1,22 @@
 var commandos = [];
 var commandEl = null;
 var file = require('./lib/file');
-var svg = require('./lib/svg');
+// var svg = require('./lib/svg');
+// var api = require('./lib/api');
 window.onload = function () {
-    document.getElementById('svg-file')
-        .addEventListener('change', function (event) {
-            console.log(this.files);
-            if (this.files.length > 0) {
-                file.getAsText(this.files[0])
-                    .then((result) => {
-                        console.log(svg.getPath(result));
-                    })
-            }
+    var fileInput = document.getElementById('svg-file')
+    file.setup(fileInput)
+        .on('uploaded', (data) => {
+            console.log('file uploated', data);
         })
-  document.getElementById('home').addEventListener('click', () => {
-    fetch('/go/0/0')
-  })
+        .on('error', (err) => {
+            console.log('error on file upload', err)
+        })
+
+
+    document.getElementById('home').addEventListener('click', () => {
+        fetch('/go/0/0')
+    })
   commandEl = document.getElementById('commandos');
   document.getElementById('my').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -73,18 +74,3 @@ var fromSVG = function (svg) {
             });
         })
 }
-fromSVG('/shape.svg').then((data) => {
-    console.log('points', data);
-    fetch('/save-to-gcode', {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify(data)
-    })
-    .then((res) => {
-        console.log('res', res);
-    })
-
-});
