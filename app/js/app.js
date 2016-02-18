@@ -1,6 +1,18 @@
 var commandos = [];
 var commandEl = null;
-window.onload = function() {
+var file = require('./lib/file');
+var svg = require('./lib/svg');
+window.onload = function () {
+    document.getElementById('svg-file')
+        .addEventListener('change', function (event) {
+            console.log(this.files);
+            if (this.files.length > 0) {
+                file.getAsText(this.files[0])
+                    .then((result) => {
+                        console.log(svg.getPath(result));
+                    })
+            }
+        })
   document.getElementById('home').addEventListener('click', () => {
     fetch('/go/0/0')
   })

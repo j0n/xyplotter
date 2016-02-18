@@ -3,7 +3,7 @@ var bodyParser = require('body-parser')
 var app = express();
 var xyUtil = require('./lib/util');
 
-app.use(express.static('app'));
+app.use(express.static('dist'));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({ extended: true }));
 
