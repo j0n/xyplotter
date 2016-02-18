@@ -7,7 +7,7 @@ window.onload = function () {
     var fileInput = document.getElementById('svg-file')
     file.setup(fileInput)
         .on('uploaded', (data) => {
-            console.log('file uploated', data);
+            console.log('file uploaded', data);
         })
         .on('error', (err) => {
             console.log('error on file upload', err)
