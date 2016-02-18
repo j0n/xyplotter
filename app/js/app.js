@@ -3,6 +3,9 @@ var commandEl = null;
 var file = require('./lib/file');
 // var svg = require('./lib/svg');
 // var api = require('./lib/api');
+var $ = (id) => {
+    return document.getElementById(id)
+}
 window.onload = function () {
     var fileInput = document.getElementById('svg-file')
     file.setup(fileInput)
@@ -14,6 +17,12 @@ window.onload = function () {
         })
 
 
+        $('play').addEventListener('click', () => {
+            fetch('/play')
+        })
+        $('pause').addEventListener('click', () => {
+            fetch('/pause')
+        })
     document.getElementById('home').addEventListener('click', () => {
         fetch('/go/0/0')
     })
