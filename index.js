@@ -1,16 +1,31 @@
 var SerialPort = require('serialport').SerialPort;
 
 var util = require('./lib/util');
-// var serialPort = new SerialPort('/dev/tty.wchusbserialfd130', {
-var serialPort = new SerialPort('/dev/tty.wchusbserialfa140', {
+var fs = require('fs');
+var Path = require('./lib/path');
+var Pattern = require('./lib/pattern');
+var serialPort = new SerialPort('/dev/tty.wchusbserialfd130', {
+// var serialPort = new SerialPort('/dev/tty.wchusbserialfa140', {
   baudrate: 115200
 })
 
 var circles = require('./lib/circles');
+var pause = false;
 var enteties = [];
 var values = {
   up: 42,
   down: 36
+}
+if (fs.existsSync('./store/settings.json', 'utf8')) {
+    values = JSON.parse(fs.readFileSync('./store/settings.json', 'utf8'))
+}
+var saveSettings = function() {
+    fs.writeFile('./store/settings.json', JSON.stringify(values), (err) => {
+        if (err) {
+            return console.log('error saving settings', err);
+        }
+        console.log('settings saved')
+    })
 }
 
 serialPort.on('open', function () {
@@ -29,9 +44,17 @@ serialPort.on('close', function () {
 var codes = [];
 
 function next () {
-  console.log('next', codes.length);
+  if (pause) {
+      console.log('pause');
+      return false
+  }
   if (codes.length > 0) {
     var gCode = codes.shift();
+    if (gCode === 'wait') {
+        setTimeout(next, 300);
+        return false;
+    }
+    console.log('write', gCode);
     serialPort.write(gCode + '\n', function (err, results, yo) {
       if (err) {
         console.log('err ' + err);
@@ -39,13 +62,14 @@ function next () {
       // console.log('results ' + results);
     });
   } else {
+      console.log('enteties.length', enteties.length);
     if (enteties.length > 0) {
       var nextCoords = enteties[0].getNext()
+          console.log('curretn id', enteties[0].id);
       if (nextCoords === false) {
         enteties.shift();
         next();
       } else {
-        console.log('next coords from entity');
         codes = nextCoords;
         next();
       }
@@ -60,12 +84,14 @@ module.exports.downValue = function (value) {
   enteties.forEach((entity) => {
     entity.setDown(values.down);
   })
+  saveSettings();
 }
 module.exports.upValue = function (value) {
   values.up = value;
   enteties.forEach((entity) => {
     entity.setUp(values.up);
   })
+  saveSettings();
 }
 module.exports.addEntitiy = function(x, y, amount, min, max) {
   var entity = new circles.Flow(
@@ -89,6 +115,18 @@ module.exports.go = function(x, y) {
   if (codes.length === 1) {
     next()
   }
+}
+module.exports.goDown = function () {
+    codes.push(util.mCode(values.down));
+    if (codes.length === 1) {
+        next()
+    }
+}
+module.exports.goUp = function () {
+    codes.push(util.mCode(values.up));
+    if (codes.length === 1) {
+        next()
+    }
 }
 module.exports.m = function(value) {
   codes.push('M1 ' + value * 1);
@@ -125,3 +163,30 @@ module.exports.rect = (x, y, width, height, n) => {
   entity.setDown(values.down);
   enteties.push(entity);
 }
+
+module.exports.path = function (x, y, paths) {
+  var entity = new Path(
+    x * 1,
+    y * 1,
+    paths
+  );
+  entity.setUp(values.up);
+  entity.setDown(values.down);
+  enteties.push(entity);
+}
+module.exports.pause = (value) => {
+    pause = typeof value === 'undefined' ? true : value
+    console.log('pause', pause);
+}
+module.exports.pattern = (x, y, width, height) => {
+  var entity = new Pattern(
+    x * 1,
+    y * 1,
+    width * 1,
+    height * 1
+  );
+  entity.setUp(values.up);
+  entity.setDown(values.down);
+  enteties.push(entity);
+}
+
