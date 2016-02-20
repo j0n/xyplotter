@@ -189,4 +189,10 @@ module.exports.pattern = (x, y, width, height) => {
   entity.setDown(values.down);
   enteties.push(entity);
 }
+module.exports.addEntity = (entity) => {
+  entity.setUp(values.up);
+  entity.setDown(values.down);
+  enteties.push(entity);
+}
+
 

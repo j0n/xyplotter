@@ -1,6 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser')
 var app = express();
+var Line = require('./lib/line');
+var Pattern = require('./lib/pattern');
 var xyUtil = require('./lib/util');
 
 app.use(express.static('dist'));
@@ -14,15 +16,28 @@ app.post('/saveObject/:name/:threshold?', (req, res) => {
     xyUtil.save(req.params.name, req.body);
     res.send('Done')
 })
-app.get('/yrepeat/:name/:x/:y/:amount/:size', (req, res) => {
-    for (var i = 0; i < req.params.amount * 1; i++) {
-        var paths = xyUtil.load(req.params.name).paths.map((path) => {
-            return xyUtil.scale(req.params.scale || 0.025, path)
-        })
-        console.log('x', req.params.x + (i * req.params.size));
-        xy.path((1 * req.params.x) + (i * req.params.size), req.params.y, paths.slice(0))
-    }
-    res.send('addes');
+app.get('/y/:name/:x/:y/:amount/:size', (req, res) => {
+    xy.addEntity(new Pattern(
+            req.params.name,
+            req.params.x,
+            req.params.y,
+            'y',
+            req.params.amount,
+            req.params.size,
+            0.1))
+    res.send('added');
+})
+
+app.get('/x/:name/:x/:y/:amount/:size', (req, res) => {
+    xy.addEntity(new Pattern(
+            req.params.name,
+            req.params.x,
+            req.params.y,
+            'x',
+            req.params.amount,
+            req.params.size,
+            0.1))
+    res.send('added');
 })
 app.get('/draw/:name/:x/:y/:scale?', (req, res) => {
     var paths = xyUtil.load(req.params.name).paths.map((path) => {
@@ -55,6 +70,16 @@ app.get('/home', (req, res) => {
   xy.goHome();
   res.send('home');
 });
+app.get('/line/:x/:y/:dx/:dy', (req, res) => {
+    var line = new Line(
+        req.params.x, 
+        req.params.y, 
+        req.params.dx, 
+        req.params.dy 
+    )
+    xy.addEntity(line);
+    res.send('added');
+})
 
 app.get('/go/:x/:y', (req, res) => {
   xy.go(req.params.x, req.params.y);
@@ -64,6 +89,7 @@ app.get('/pattern/:x/:y/:width/:height', (req, res) => {
   xy.pattern(req.params.x, req.params.y, req.params.width, req.params.height);
   res.send('test');
 });
+
 app.get('/test/:x/:y/:n/:r', (req, res) => {
   xy.test(req.params.x, req.params.y, req.params.n, req.params.r);
   res.send('test');
