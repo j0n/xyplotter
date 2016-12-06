@@ -4,8 +4,8 @@ var util = require('./lib/util');
 var fs = require('fs');
 var Path = require('./lib/path');
 var Pattern = require('./lib/pattern');
-var serialPort = new SerialPort('/dev/tty.wchusbserialfd130', {
-// var serialPort = new SerialPort('/dev/tty.wchusbserialfa140', {
+//var serialPort = new SerialPort('/dev/tty.wchusbserialfd130', {
+var serialPort = new SerialPort('/dev/tty.wchusbserialfa140', {
   baudrate: 115200
 })
 
@@ -51,7 +51,8 @@ function next () {
   if (codes.length > 0) {
     var gCode = codes.shift();
     if (gCode === 'wait') {
-        setTimeout(next, 300);
+        console.log('waiting');
+        setTimeout(next, 250);
         return false;
     }
     console.log('write', gCode);
@@ -68,15 +69,14 @@ function next () {
           console.log('curretn id', enteties[0].id);
       if (nextCoords === false) {
         enteties.shift();
-        next();
+        setTimeout(next, 100);
       } else {
         codes = nextCoords;
-        next();
+        setTimeout(next, 100);
       }
     } else {
       console.log('END');
     }
-
   }
 }
 module.exports.downValue = function (value) {
@@ -93,6 +93,7 @@ module.exports.upValue = function (value) {
   })
   saveSettings();
 }
+/*
 module.exports.addEntitiy = function(x, y, amount, min, max) {
   var entity = new circles.Flow(
     {x:x*1, y:y*1},
@@ -102,7 +103,7 @@ module.exports.addEntitiy = function(x, y, amount, min, max) {
   entity.setUp(values.up);
   entity.setDown(values.down);
   enteties.push(entity);
-}
+} */
 module.exports.abort = function() {
   codes.push(values.up);
   enteties = [];
@@ -190,6 +191,7 @@ module.exports.pattern = (x, y, width, height) => {
   enteties.push(entity);
 }
 module.exports.addEntity = (entity) => {
+    console.log('adding ENTITY');
   entity.setUp(values.up);
   entity.setDown(values.down);
   enteties.push(entity);

@@ -3,6 +3,9 @@ var bodyParser = require('body-parser')
 var app = express();
 var Line = require('./lib/line');
 var Pattern = require('./lib/pattern');
+var CirclePattern = require('./lib/circlePattern');
+var BasicCircle = require('./lib/circles/basic');
+var Tri = require('./lib/tri');
 var xyUtil = require('./lib/util');
 
 app.use(express.static('dist'));
@@ -16,27 +19,88 @@ app.post('/saveObject/:name/:threshold?', (req, res) => {
     xyUtil.save(req.params.name, req.body);
     res.send('Done')
 })
-app.get('/y/:name/:x/:y/:amount/:size', (req, res) => {
-    xy.addEntity(new Pattern(
-            req.params.name,
+app.get('/y/:name/:x/:y/:amount/:size/:wait?', (req, res) => {
+    var pattern = new Pattern(
             req.params.x,
             req.params.y,
+            req.params.name,
             'y',
             req.params.amount,
             req.params.size,
-            0.1))
+            0.4,
+            req.params.wait ? true : false)
+    xy.addEntity(pattern);
+
     res.send('added');
 })
-
-app.get('/x/:name/:x/:y/:amount/:size', (req, res) => {
-    xy.addEntity(new Pattern(
-            req.params.name,
+app.get('/file/:name/:x/:y/:scale/:wait?', (req, res) => {
+    var pattern = new Pattern(
             req.params.x,
             req.params.y,
+            req.params.name,
+            'y',
+            1,
+            1,
+            req.params.scale,
+            req.params.wait ? true : false)
+    xy.addEntity(pattern);
+
+    res.send('added');
+})
+app.get('/x/:name/:x/:y/:amount/:size/:wait?', (req, res) => {
+    console.log(req.params.wait);
+    var pattern = new Pattern(
+            req.params.x,
+            req.params.y,
+            req.params.name,
             'x',
             req.params.amount,
             req.params.size,
-            0.1))
+            0.1,
+            req.params.wait ? true : false)
+    xy.addEntity(pattern);
+    res.send('added');
+})
+app.get('/circle/:x/:y/:r/:segments?', (req, res) => {
+    console.log('adding BASIC');
+    xy.addEntity(new BasicCircle(
+                req.params.x,
+                req.params.y,
+                req.params.r,
+                req.params.segments
+            ))
+    return res.send('added');
+})
+
+app.get('/circle/:name/:x/:y/:r/:amount', (req, res) => {
+    console.log('adding pattern');
+
+    var coords =  xyUtil.load(req.params.name).paths.map((path) => {
+        return xyUtil.scale(0.1, path)
+    })
+    xy.addEntity(new CirclePattern(
+            {
+                x: req.params.x,
+                y: req.params.y
+            },
+            coords,
+            req.params.r,
+            req.params.amount))
+    res.send('added');
+})
+
+app.get('/circletri/:x/:y/:r/:amount/:width/:height', (req, res) => {
+    console.log('adding pattern');
+
+    var tri = new Tri({ x: 0, y: 0 }, req.params.width, req.params.height);
+    xy.addEntity(new CirclePattern(
+            {
+                x: req.params.x,
+                y: req.params.y
+            },
+            tri.paths,
+            req.params.r,
+            req.params.amount))
     res.send('added');
 })
 app.get('/draw/:name/:x/:y/:scale?', (req, res) => {

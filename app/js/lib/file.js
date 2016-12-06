@@ -20,11 +20,13 @@ module.exports.setup = function (el) {
         if (this.files.length === 0) {
             return false
         }
+        console.log('SET');
         getAsText(this.files[0])
             .then((result) => {
+                console.log('lines', svg.getLines(result));
                 return api.savePath(
                     this.files[0].name,
-                    svg.getPath(result)
+                    svg.getLines(result)
                 )
             })
             .then((data) => {
